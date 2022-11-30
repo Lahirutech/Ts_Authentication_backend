@@ -11,6 +11,13 @@ import { nanoid } from "nanoid";
 import argon2 from "argon2";
 import log from "../utils/logger";
 
+export const privateFields = [
+  "password",
+  "__v",
+  "verificationCode",
+  "passwordResetCode",
+  "verified",
+];
 @pre<User>("save", async function () {
   if (!this.isModified("password")) {
     return;
@@ -51,7 +58,7 @@ export class User {
 
   async validatePassword(this: DocumentType<User>, userPassword: string) {
     try {
-      return await argon2.verify(userPassword, this.password);
+      return await argon2.verify(this.password, userPassword);
     } catch (e) {
       log.error(e, "Could not validate password");
       return false;

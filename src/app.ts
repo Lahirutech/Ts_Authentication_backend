@@ -4,9 +4,11 @@ import config from "config";
 import log from "./utils/logger";
 import connectDb from "./utils/DbConnection";
 import router from "./routes";
+import deserializeUser from "./middleware/deserializeUser";
 
 const app = express();
 app.use(express.json());
+app.use(deserializeUser);
 app.use(router);
 
 const port = config.get("port");
