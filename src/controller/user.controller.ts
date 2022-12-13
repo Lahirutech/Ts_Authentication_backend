@@ -122,3 +122,7 @@ export async function resetPasswordHandler(
 export async function getCurrentUserHandler(req: Request, res: Response) {
   return res.send(res.locals.user);
 }
+
+export async function getCurrentUser(req: Request, res: Response) {
+  return res.send(res.locals.user);
+}

@@ -41,7 +41,7 @@ export class User {
   @prop({ required: true })
   firstName: string;
 
-  @prop({ required: true })
+  @prop({ required: false })
   lastName: string;
 
   @prop({ required: true })

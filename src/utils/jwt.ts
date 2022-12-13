@@ -27,8 +27,17 @@ export function verifyJwt<T>(
 
   try {
     const decoded = jwt.verify(token, publicKey) as T;
-    return decoded;
-  } catch (e) {
-    return null;
+    return {
+      valid: true,
+      expired: false,
+      decoded,
+    } as T;
+  } catch (e: any) {
+    const err = {
+      valid: false,
+      expired: e.message === "jwt expired" || true,
+      decoded: null,
+    };
+    return err as T;
   }
 }

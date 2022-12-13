@@ -8,22 +8,21 @@ import {
   signAccessToken,
   signRefreshToken,
 } from "../service/auth.service";
+import { updateSession } from "../service/session.service";
 import { findUserByEmail, findUserById } from "../service/user.service";
 import { verifyJwt } from "../utils/jwt";
 
+//Login function
 export async function createSessionHandler(
   req: Request<{}, {}, CreateSessionInput>,
   res: Response
 ) {
   const message = "Invalid email or password";
   const { email, password } = req.body;
-  console.log("email", email);
-  console.log("password", password);
-
   const user = await findUserByEmail(email);
 
   if (!user) {
-    return res.send("user not found");
+    return res.status(401).send("Invalid Email- user not found");
   }
 
   if (!user.verified) {
@@ -41,6 +40,25 @@ export async function createSessionHandler(
   // sign a refresh token
   const refreshToken = await signRefreshToken({ userId: user._id });
 
+  // set cookies
+  res.cookie("accessToken", accessToken, {
+    maxAge: 900000, // 15 mins
+    httpOnly: true,
+    domain: "localhost",
+    path: "/",
+    sameSite: "strict",
+    secure: false,
+  });
+
+  res.cookie("refreshToken", refreshToken, {
+    maxAge: 3.154e10, // 1 year
+    httpOnly: true,
+    domain: "localhost",
+    path: "/",
+    sameSite: "strict",
+    secure: false,
+  });
+
   // send the tokens
 
   return res.send({
@@ -48,10 +66,38 @@ export async function createSessionHandler(
     refreshToken,
   });
 }
+export async function invalidateTokens(req: Request, res: Response) {
+  // const sessionId = res.locals.user.session;
+  // console.log("sessionId", res.locals.user);
+  // if (!sessionId) {
+  //   return res.status(200).send("No user Logged out");
+  // }
+  // await updateSession({ _id: sessionId }, { valid: false });
+
+  // set cookies
+  res.cookie("accessToken", null, {
+    maxAge: 900000, // 15 mins
+    httpOnly: true,
+    domain: "localhost",
+    path: "/",
+    sameSite: "strict",
+    secure: false,
+  });
+
+  res.cookie("refreshToken", null, {
+    maxAge: 3.154e10, // 1 year
+    httpOnly: true,
+    domain: "localhost",
+    path: "/",
+    sameSite: "strict",
+    secure: false,
+  });
+
+  return res.status(200).send("Logged out");
+}
 
 export async function refreshAccessTokenHandler(req: Request, res: Response) {
   const refreshToken = get(req, "headers.x-refresh") as string;
-
   const decoded = verifyJwt<{ session: string }>(
     refreshToken,
     "refreshTokenPublicKey"

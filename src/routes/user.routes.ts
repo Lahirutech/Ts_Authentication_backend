@@ -2,6 +2,7 @@ import express from "express";
 import {
   createUserHandler,
   forgotPasswordHandler,
+  getCurrentUser,
   getCurrentUserHandler,
   resetPasswordHandler,
   verifyUserHandler,
@@ -39,5 +40,7 @@ router.post(
 );
 
 router.get("/api/users/me", requireUser, getCurrentUserHandler);
+
+router.get("/api/me", requireUser, getCurrentUser);
 
 export default router;
